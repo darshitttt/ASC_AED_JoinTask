@@ -4,6 +4,10 @@ import torch
 import torchaudio
 import pandas as pd
 import numpy as np
+import sys
+
+sys.path.append('../utils')
+import audio_utils
 
 # Synthetic Scrapper Dataset with events and scenes
 class scraperDataset(Dataset):
@@ -32,14 +36,17 @@ class scraperDataset(Dataset):
 
         # Load Audio file
         audio_file = os.path.join(self.data_directory, self.audio_files[idx])
-        audio_data, sr = torchaudio.load(audio_file)
+        #audio_data, sr = torchaudio.load(audio_file)
+        audio = audio_utils.load_audio(audio_file)
 
-        if self.only_scene:
+        log_mel_spectrogram = audio_utils.get_log_melSpectrogram(audio)
+
+        '''if self.only_scene:
             sample = {'audio':audio_data, 'scene_label':self.scene_labels[idx]}
         else:
-            sample = {'audio':audio_data, 'scene_label':self.scene_labels[idx], 'event_list':self.events_label_list[idx]}
+            sample = {'audio':audio_data, 'scene_label':self.scene_labels[idx], 'event_list':self.events_label_list[idx]}'''
         
-        return sample
+        return log_mel_spectrogram
 
 
 # Real-world TUTUrban18 Dataset with Scene Labels
