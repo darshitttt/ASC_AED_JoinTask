@@ -8,7 +8,7 @@ class logmelAE_30secs(nn.Module):
 
     def __init__(self):
         super(logmelAE_30secs, self).__init__()
-
+        
         self.encoder = nn.Sequential(
             nn.Conv2d(1, 25, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(),
@@ -16,20 +16,26 @@ class logmelAE_30secs(nn.Module):
             nn.Conv2d(25, 50, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(),
 
-            nn.Conv2d(50, 5, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU()
-        )
-
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(5, 50, kernel_size=(3,2), stride=2, padding=0),
+            nn.Conv2d(50, 100, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(),
 
-            nn.ConvTranspose2d(50, 25, kernel_size=(2,2), stride=2, padding=0),
+            nn.Conv2d(100, 5, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU()
+            )
+
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(5, 100, kernel_size=(2,2), stride=2, padding=0),
+            nn.LeakyReLU(),
+
+            nn.ConvTranspose2d(100, 50, kernel_size=(2,2), stride=2, padding=0),
+            nn.LeakyReLU(),
+
+            nn.ConvTranspose2d(50, 25, kernel_size=(2,2), stride=2, padding=(1,0)),
             nn.LeakyReLU(),
 
             nn.ConvTranspose2d(25, 1, kernel_size=(2,3), stride=2, padding=2),
             nn.LeakyReLU()
-        )
+            )
 
     def forward(self, x):
         x = self.encoder(x)
