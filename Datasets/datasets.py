@@ -5,8 +5,6 @@ import torchaudio
 import pandas as pd
 import numpy as np
 import sys
-
-sys.path.append('../utils')
 import audio_utils
 
 # Synthetic Scrapper Dataset with events and scenes
@@ -15,12 +13,13 @@ class scraperDataset(Dataset):
     '''datadir = '../../audioData/sythenticSoundscenes/test/'
     csv = 'scrapper_dataset.csv'''
 
-    def __init__(self, dataset_csv, data_dir, only_scene=False):
+    def __init__(self, dataset_csv, data_dir, only_scene=False, transforms=None):
 
         self.dataset_csv = dataset_csv
         self.data_directory = data_dir
         self.only_scene = only_scene
         self.dataframe = pd.read_csv(dataset_csv)
+        self.transforms = transforms
 
         self.audio_files = self.dataframe['audio_fileNames']
         self.label_files = self.dataframe['label_fileNames']
@@ -37,16 +36,17 @@ class scraperDataset(Dataset):
         # Load Audio file
         audio_file = os.path.join(self.data_directory, self.audio_files[idx])
         #audio_data, sr = torchaudio.load(audio_file)
-        audio = audio_utils.load_audio(audio_file)
+        audio = audio_utils.load_audio_from_file(audio_file)
 
-        log_mel_spectrogram = audio_utils.get_log_melSpectrogram(audio)
+        if self.transforms:
+            audio = self.transforms(audio)
 
-        '''if self.only_scene:
-            sample = {'audio':audio_data, 'scene_label':self.scene_labels[idx]}
+        if self.only_scene:
+            sample = {'data':audio, 'scene_label':self.scene_labels[idx]}
         else:
-            sample = {'audio':audio_data, 'scene_label':self.scene_labels[idx], 'event_list':self.events_label_list[idx]}'''
+            sample = {'data':audio, 'scene_label':self.scene_labels[idx], 'event_list':self.events_label_list[idx]}
         
-        return log_mel_spectrogram
+        return sample
 
 
 # Real-world TUTUrban18 Dataset with Scene Labels
@@ -55,12 +55,12 @@ class TUT18_Dataset(Dataset):
     '''datadir = '../../audioData/TUTUrban2018/developmentDataset/TUT-urban-acoustic-scenes-2018-development/'
     csv = 'TUT18_train.csv'''
 
-    def __init__(self, dataset_csv, data_dir):
+    def __init__(self, dataset_csv, data_dir, transforms=None):
 
         self.dataset_csv = dataset_csv
         self.data_directory = data_dir
         self.dataframe = pd.read_csv(dataset_csv)
-
+        self.transforms = transforms
         self.audio_files = self.dataframe['files']
         self.scene_labels = self.dataframe['labels']
 
@@ -72,7 +72,11 @@ class TUT18_Dataset(Dataset):
             idx = idx.tolist()
 
         audio_file = os.path.join(self.data_directory, self.audio_files[idx])
-        audio_data, sr = torchaudio.load(audio_file)
+        #audio_data, sr = torchaudio.load(audio_file)
+        audio = audio_utils.load_audio_from_file(audio_file)
 
-        sample = {'audio':audio_data, 'scene_label':self.scene_labels[idx]}
+        if self.transforms:
+            audio = self.transforms(audio)
+        
+        sample = {'data':audio, 'scene_label':self.scene_labels[idx]}
         return sample
