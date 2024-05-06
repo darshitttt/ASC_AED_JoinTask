@@ -25,6 +25,8 @@ class scraperDataset(Dataset):
         self.label_files = self.dataframe['label_fileNames']
         self.scene_labels = self.dataframe['acoustic_scene_label']
         self.events_label_list = self.dataframe['events_label_list']
+        self.all_scenes = self.scene_labels.unique()
+        self.all_events = self.events_label_list.unique()
 
     def __len__(self):
         return len(self.audio_files)
@@ -37,14 +39,14 @@ class scraperDataset(Dataset):
         audio_file = os.path.join(self.data_directory, self.audio_files[idx])
         #audio_data, sr = torchaudio.load(audio_file)
         audio = audio_utils.load_audio_from_file(audio_file)
-
+        scene_label = label_to_one_hot(self.scene_labels[idx], (list)(self.all_scenes))
         if self.transforms:
             audio = self.transforms(audio)
 
         if self.only_scene:
-            sample = {'data':audio, 'scene_label':self.scene_labels[idx]}
+            sample = {'data':audio, 'scene_label':scene_label}
         else:
-            sample = {'data':audio, 'scene_label':self.scene_labels[idx], 'event_list':self.events_label_list[idx]}
+            sample = {'data':audio, 'scene_label':scene_label}
         
         return sample
 
@@ -63,6 +65,7 @@ class TUT18_Dataset(Dataset):
         self.transforms = transforms
         self.audio_files = self.dataframe['files']
         self.scene_labels = self.dataframe['labels']
+        self.all_scenes = self.scene_labels.unique()
 
     def __len__(self):
         return len(self.audio_files)
@@ -74,9 +77,29 @@ class TUT18_Dataset(Dataset):
         audio_file = os.path.join(self.data_directory, self.audio_files[idx])
         #audio_data, sr = torchaudio.load(audio_file)
         audio = audio_utils.load_audio_from_file(audio_file)
-
+        scene_label = label_to_one_hot(self.scene_labels[idx], self.all_scenes)
+        
         if self.transforms:
             audio = self.transforms(audio)
         
-        sample = {'data':audio, 'scene_label':self.scene_labels[idx]}
+        sample = {'data':audio, 'scene_label':scene_label}
+        
         return sample
+    
+
+
+def label_to_one_hot(label, label_array):
+    """
+    Convert string labels to one-hot encoded labels based on the provided array of labels.
+
+    Args:
+    - labels (list of str): List of string labels to convert.
+    - label_array (numpy array): Array containing all possible labels.
+
+    Returns:
+    - one_hot_encoded (numpy array): One-hot encoded labels corresponding to the input labels.
+    """
+    label_dict = {label: i for i, label in enumerate(label_array)}
+    one_hot_encoded = np.zeros(len(label_array), dtype=int)
+    one_hot_encoded[label_dict[label]] = 1
+    return torch.tensor(one_hot_encoded)
