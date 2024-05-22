@@ -9,7 +9,7 @@ import random
 import torch
 import librosa
 
-SAMPLE_RATE = 16000
+SAMPLE_RATE = 32000
 N_MELS = 40
 N_FFT = int(SAMPLE_RATE * 0.04)
 HOP_LEN = int(SAMPLE_RATE * 0.02)
@@ -22,7 +22,7 @@ HOP_LEN = int(SAMPLE_RATE * 0.02)
 )'''
 
 # %%
-def load_audio_from_file(aud_filename):
+def load_audio_from_file(aud_filename, sample_rate=SAMPLE_RATE):
     """
     Loads an audio file from the given filename, normalizes it, resamples it if necessary to the target sample rate,
     and returns the audio waveform.
@@ -33,7 +33,7 @@ def load_audio_from_file(aud_filename):
     Returns:
         torch.Tensor: The audio waveform tensor.
     """
-    wav, sr = librosa.load(aud_filename, sr=SAMPLE_RATE, mono=True)
+    wav, sr = librosa.load(aud_filename, sr=sample_rate, mono=True)
     return librosa.util.normalize(wav)
 
 def transform_audio(audio, sr, target_sr=SAMPLE_RATE, mono=True):
@@ -88,12 +88,12 @@ def add_two_noise(aud_filename, snr_list):
     noisy = nn.functional.normalize(noisy)
     return noisy
 
-def get_log_melSpectrogram(audio):
+def get_log_melSpectrogram(audio, sample_rate=SAMPLE_RATE, n_mels=N_MELS, n_fft=N_FFT, hop_len=HOP_LEN, window_len=N_FFT):
     mel_spectrogram = librosa.feature.melspectrogram(
-        y=audio, sr=SAMPLE_RATE,
-        n_mels = N_MELS,
-        hop_length = HOP_LEN,
-        n_fft = N_FFT
+        y=audio, sr=sample_rate,
+        n_mels = n_mels,
+        hop_length = hop_len,
+        n_fft = window_len
     )
 
     log_mel_spectrogram = librosa.power_to_db(mel_spectrogram, ref=np.max)

@@ -7,6 +7,14 @@ import numpy as np
 import sys
 import audio_utils
 
+TUT_AUD_DIR = '/work/dpandya/giggityGit/audioData/TUTUrban2018/developmentDataset/TUT-urban-acoustic-scenes-2018-development/'
+SCAPPER_AUD_DIR = '/work/dpandya/giggityGit/audioData/sythenticSoundscenes/'
+TUT_TRAIN_CSV = '/work/dpandya/giggityGit/ASC_AED_JoinTask/Datasets/TUT18_train.csv'
+TUT_TEST_CSV = '/work/dpandya/giggityGit/ASC_AED_JoinTask/Datasets/TUT18_test.csv'
+SCAPPER_TRAIN_CSV = '/work/dpandya/giggityGit/ASC_AED_JoinTask/Datasets/scrapper_train_dataset.csv'
+SCAPPER_TEST_CSV = '/work/dpandya/giggityGit/ASC_AED_JoinTask/Datasets/scrapper_test_dataset.csv'
+
+
 # Synthetic Scrapper Dataset with events and scenes
 class scraperDataset(Dataset):
 
